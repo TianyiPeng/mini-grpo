@@ -26,7 +26,7 @@ Full documentation is available in the [docs/](docs/) folder.
 
 ```bash
 # Clone the repository
-git clone https://github.com/tp2845/mini-grpo.git
+git clone https://github.com/TianyiPeng/mini-grpo.git
 cd mini-grpo
 
 # Install dependencies using uv
