@@ -1,0 +1,45 @@
+[project]
+name = "minigrpo"
+version = "0.1.0"
+description = "A minimal GRPO implementation for training language models"
+requires-python = ">=3.10"
+readme = "README.md"
+authors = [
+    {name = "MiniGRPO Contributors"}
+]
+keywords = ["grpo", "reinforcement-learning", "language-models", "rlhf"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "torch>=2.0.0",
+    "transformers>=4.30.0",
+    "datasets>=2.0.0",
+    "tqdm>=4.65.0",
+    "python-dotenv>=1.0.0",
+    "numpy>=1.24.0",
+    "math-verify>=0.8.0",
+    "tensorboard>=2.14.0",
+    "matplotlib>=3.10.8",
+]
+
+[project.optional-dependencies]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+

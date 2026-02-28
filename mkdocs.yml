@@ -1,0 +1,64 @@
+site_name: MiniGRPO Documentation
+site_description: Learning notes and explanations for GRPO implementation
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - toc.integrate
+    - search.suggest
+    - search.highlight
+
+nav:
+  - Home: index.md
+  - GRPO Algorithm:
+    - Objective Function: grpo_objective.md
+    - Implementation: implementation.md
+  - PyTorch Concepts:
+    - log_softmax: log_softmax.md
+    - torch.gather: torch_gather.md
+    - torch.stack: torch_stack.md
+    - Memory Efficiency: memory_efficiency.md
+  - Mathematical Foundations:
+    - KL Divergence: kl_divergence.md
+  - Best Practices:
+    - Multi-GPU Transfer: multi_gpu_transfer.md
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+
+plugins:
+  - search
+  - mkdocs-material
+
+
