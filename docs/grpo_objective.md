@@ -86,16 +86,14 @@ For continuous distributions, this becomes an integral.
 
 In our case, we want to estimate:
 
-$$\text{KL}[\pi_{\text{ref}} || \pi_\theta] = \mathbb{E}_{x \sim \pi_{\text{ref}}}\left[\log \frac{\pi_{\text{ref}}(x)}{\pi_\theta(x)}\right] \tag{6}$$
+$$\text{KL}[\pi_\theta || \pi_{\text{ref}}] = \mathbb{E}_{x \sim \pi_\theta}\left[\log \frac{\pi_\theta(x)}{\pi_{\text{ref}}(x)}\right] \tag{6}$$
 
-A naive Monte Carlo estimator would be:
+A naive Monte Carlo estimator with $x \sim \pi_\theta$ would be:
 
-$$k_1 = \log \frac{\pi_{\text{ref}}(x)}{\pi_\theta(x)} = \log r \tag{7}$$
-
-where $r = \frac{\pi_{\text{ref}}(x)}{\pi_\theta(x)}$ and $x \sim \pi_{\text{ref}}$.
+$$k_1 = -\log \frac{\pi_{\text{ref}}(x)}{\pi_\theta(x)} \tag{7}$$
 
 **Problem**: This estimator has high variance because:
-- It can be negative (when $\pi_{\text{ref}}(x) < \pi_\theta(x)$)
+- It can be negative (when $\pi_\theta(x) < \pi_{\text{ref}}(x)$)
 - KL divergence is always non-negative
 - Half the samples contribute negative values, increasing variance
 
@@ -134,15 +132,13 @@ $$k_3 = (r - 1) - \log r \geq 0 \tag{12}$$
 
 ### Application to GRPO
 
-In GRPO, we need $\text{KL}[\pi_\theta || \pi_{\text{ref}}]$ (note: order matters!).
+In GRPO, we need $\text{KL}[\pi_\theta || \pi_{\text{ref}}]$.
 
-For $\text{KL}[\pi_\theta || \pi_{\text{ref}}]$ with samples $x \sim \pi_\theta$, Schulman's estimator is:
+For $\text{KL}[\pi_\theta || \pi_{\text{ref}}]$ with samples $x \sim \pi_\theta$, Schulman's $k_3$ estimator uses $r = \frac{\pi_{\text{ref}}(x)}{\pi_\theta(x)}$:
 
-$$k_3 = r \log r - (r - 1) \tag{13}$$
+$$k_3 = (r - 1) - \log r \tag{13}$$
 
-where $r = \frac{\pi_\theta(x)}{\pi_{\text{ref}}(x)}$.
-
-However, in our codebase, we compute $\text{KL}[\pi_{\text{ref}} || \pi_\theta]$ instead (the reverse direction). Let's see why:
+This is exactly what our codebase computes. Let's see how:
 
 **In the code**:
 ```python
@@ -154,36 +150,6 @@ This computes:
 - `diff = log(π_ref/π_θ)`
 - `exp(diff) = π_ref/π_θ`
 - `per_token_kl = (π_ref/π_θ) - log(π_ref/π_θ) - 1`
-
-And different from the KL penalty term used in equation (2), we estimate the KL divergence with the following unbiased estimator (Schulman, 2020):
-
-![KL Divergence Estimator](./images/kl_estimator_equation.png)
-
-*Equation (4) from the GRPO paper: Unbiased KL divergence estimator that is guaranteed to be positive.*
-
-The estimator form shown in the image is:
-
-$$\mathbb{D}_{\text{KL}}[\pi_\theta || \pi_{\text{ref}}] = \frac{\pi_{\text{ref}}(o_{i,t} | q, o_{i,<t})}{\pi_\theta(o_{i,t} | q, o_{i,<t})} - \log\frac{\pi_{\text{ref}}(o_{i,t} | q, o_{i,<t})}{\pi_\theta(o_{i,t} | q, o_{i,<t})} - 1 \tag{4}$$
-
-which is guaranteed to be positive.
-
-**Important Note on Notation**: The equation label shows $\mathbb{D}_{\text{KL}}[\pi_\theta || \pi_{\text{ref}}]$, but the actual formula uses the ratio $r = \frac{\pi_{\text{ref}}}{\pi_\theta}$. This form `r - log(r) - 1` is an unbiased estimator for $\text{KL}[\pi_{\text{ref}} || \pi_\theta]$ (the reverse direction), which penalizes the current policy $\pi_\theta$ for deviating from the reference policy $\pi_{\text{ref}}$. 
-
-This is exactly what we compute in code:
-```python
-diff = ref_per_token_logps - per_token_logps  # log(π_ref/π_θ)
-per_token_kl = torch.exp(diff) - diff - 1     # (π_ref/π_θ) - log(π_ref/π_θ) - 1
-```
-
-Where `exp(diff) = π_ref/π_θ` and the expression `exp(diff) - diff - 1` matches the form shown in equation (15).
-
-This is the **correct and standard form** for estimating KL divergence using Schulman's unbiased estimator. The form $r - \log(r) - 1$ where $r = \frac{\pi_{\text{ref}}}{\pi_\theta}$ is:
-- The unbiased estimator for $\text{KL}[\pi_{\text{ref}} || \pi_\theta]$ 
-- Always positive (guaranteed by the mathematical property $e^x \geq x + 1$)
-- Low variance compared to naive Monte Carlo estimators
-- Numerically stable when implemented with clipping
-
-This matches exactly what is shown in the GRPO paper equation (4) and is the form we use in our implementation.
 
 **Key insight**: The form `exp(diff) - diff - 1` where `diff = log(π_ref/π_θ)` is:
 - Always positive (since $e^x \geq x + 1$ for all $x$)
